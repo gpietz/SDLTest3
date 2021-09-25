@@ -1,0 +1,36 @@
+[package]
+name = "sdltest3"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rg3d-sound = "0.24.1"
+legion = "0.4.0"
+lazy_static = "1.4.0"
+rand = "0.8.4"
+
+[dependencies.sdl2]
+version = "0.34.5"
+default-features = false
+features = ["ttf","image","gfx","mixer","static-link","use-vcpkg"]
+
+[package.metadata.vcpkg]
+dependencies = ["sdl2", "sdl2-image[libjpeg-turbo,tiff,libwebp]", "sdl2-ttf", "sdl2-gfx", "sdl2-mixer"]
+git = "https://github.com/microsoft/vcpkg"
+rev = "261c458af6e3eed5d099144aff95d2b5035f656b"
+
+[package.metadata.vcpkg.target]
+x86_64-pc-windows-msvc = { triplet = "x64-windows-static-md" }
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Windows, Linux and macOS with vcpkg
+#
+# Another method of getting the development libraries is with vcpkg. To set up a project to build a static binary
+# on Windows (MSVC), Linux or macOS that is buildable like this:
+#
+# cargo install cargo-vcpkg
+# cargo vcpkg build
+# cargo build
+#
