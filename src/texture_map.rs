@@ -32,7 +32,7 @@ impl<'a> TextureMap<'a> {
 
     pub fn load_textures(&mut self, texture_creator: &'a TextureCreator<WindowContext>) {
         self.add_texture(texture_creator, TextureId::Spaceship, "resources/gfx/f1.png");
-        self.add_texture(texture_creator, TextureId::Bjarne, "resources/gfx/BjarneStroustrup.jpg");
+        self.add_texture(texture_creator, TextureId::Bjarne, "resources/gfx/bjarne.jpg");
     }
 
     pub fn get_texture(&self, texture_id: TextureId) -> Option<&Texture<'a>> {
