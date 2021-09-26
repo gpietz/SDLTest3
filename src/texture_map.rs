@@ -24,7 +24,7 @@ impl<'a> TextureMap<'a> {
         }
     }
 
-    fn add_texture(&mut self
+    fn add_texture(&mut self,
                    texture_creator: &'a TextureCreator<WindowContext>,
                    texture_id: TextureId,
                    name: &str) {
