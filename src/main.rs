@@ -1,30 +1,44 @@
 #![warn(clippy::pedantic)]
 
+use std::time::{SystemTime, Duration};
+
+use sdl2::event::Event;
+use sdl2::image::{self, InitFlag};
+use sdl2::keyboard::Keycode;
+
+use prelude::*;
+
+use crate::frame_counter::*;
+use crate::texture_map::TextureMap;
+
 mod soundapi;
 mod systems;
 mod components;
 mod texture_map;
 mod draw_buffer;
 mod spawner;
+mod frame_counter;
 
 mod prelude {
     // Extern
     pub use legion::*;
-    pub use legion::world::SubWorld;
-    pub use legion::systems::{CommandBuffer, Resources};
     pub use legion::query::*;
+    pub use legion::systems::{CommandBuffer, Resources};
+    pub use legion::world::SubWorld;
     pub use sdl2::rect::Point;
     pub use sdl2::rect::Rect;
     pub use sdl2::ttf::Font;
+
+    // Misc
+    pub use crate::components::*;
+    pub use crate::draw_buffer::*;
+    pub use crate::DrawCommand::*;
+    pub use crate::soundapi::*;
     // Mods
     pub use crate::spawner::*;
     pub use crate::systems::*;
-    // Misc
-    pub use crate::components::*;
-    pub use crate::soundapi::*;
-    pub use crate::draw_buffer::*;
     pub use crate::texture_map::*;
-    pub use crate::DrawCommand::*;
+
     // Constants
     pub static WINDOW_TILE: &str = "SDL Test ]|[";
     pub const SCREEN_WIDTH: u32 = 1024;
@@ -32,13 +46,6 @@ mod prelude {
     pub const SPACESHIP_WIDTH: u32 = 64;
     pub const SPACESHIP_HEIGHT: u32 = 29;
 }
-
-use prelude::*;
-use sdl2::image::{self, InitFlag};
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
-use std::time::Duration;
-use crate::texture_map::TextureMap;
 
 fn main() {
     // Initialize SDL systems
@@ -84,7 +91,12 @@ fn main() {
 
     let delay_time = Duration::new(0, 100000000 / 10);
     let mut event_pump = sdl_context.event_pump().unwrap();
+    let mut fps_count = FrameCounter::new();
+    let mut window_updated = SystemTime::now();
     'main: loop {
+        fps_count.start(&sdl_context);
+
+        // Even polling
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => break 'main,
@@ -105,14 +117,17 @@ fn main() {
         // Update resources
         resources.insert(CanvasSize::create_from(&canvas));
 
-        // Update window title with rocket count
-        let rocket_count = <&Rocket>::query().iter(&world).count();
-        let mut new_window_title = WINDOW_TILE.to_owned();
-        new_window_title.push_str(&format!("  -> Rockets #{} <-", rocket_count));
-        canvas.window_mut().set_title(new_window_title.as_str()).unwrap();
+        // Get fps count
+        let fps = fps_count.get_frame_count(&sdl_context);
 
-        // FPS Count
-        //sdl_context.timer().unwrap().ticks()
+        // Update window title with rocket count
+        if window_updated.elapsed().unwrap().as_secs() >= 1 {
+            window_updated = SystemTime::now();
+            let rocket_count = <&Rocket>::query().iter(&world).count();
+            let mut new_window_title = WINDOW_TILE.to_owned();
+            new_window_title.push_str(&format!("  -> Rockets #{} // FPS: {}", rocket_count, fps as u32));
+            canvas.window_mut().set_title(new_window_title.as_str()).unwrap();
+        }
 
         // Delay
         std::thread::sleep(delay_time);

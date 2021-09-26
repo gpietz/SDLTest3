@@ -1,13 +1,13 @@
 #![warn(clippy::pedantic)]
 
+use crate::prelude::*;
+
 mod render_background;
 mod render_bjarne;
 mod render_text;
 mod render_rocket;
 mod movement_rocket;
 mod movement_text;
-
-use crate::prelude::*;
 
 pub fn build_scheduler() -> Schedule {
    Schedule::builder()
