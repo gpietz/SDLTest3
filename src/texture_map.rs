@@ -2,21 +2,25 @@ use sdl2::render::{Texture, TextureCreator, TextureQuery};
 use sdl2::video::WindowContext;
 use sdl2::image::LoadTexture;
 use sdl2::rect::Rect;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, Copy, PartialEq)]
 pub enum TextureId {
-    Spaceship = 0,
-    Bjarne = 1,
+    Spaceship,
+    Bjarne,
 }
 
 pub struct TextureMap<'a> {
-    textures: Vec<Texture<'a>>
+    textures: HashMap<usize, Texture<'a>>
 }
+
+#[derive(Clone, Debug, Copy, PartialEq)]
+pub struct TextureInfo(pub Rect);
 
 impl<'a> TextureMap<'a> {
     pub fn new() -> Self {
         Self {
-            textures: Vec::new()
+            textures: HashMap::new()
         }
     }
 
@@ -36,12 +40,25 @@ impl<'a> TextureMap<'a> {
     }
 
     pub fn get_texture(&self, texture_id: TextureId) -> Option<&Texture<'a>> {
-        self.textures.get(texture_id as usize)
+        let texture_key = texture_id as usize;
+        self.textures.get(&texture_key)
     }
 
     pub fn get_texture_rect(&self, texture_id: TextureId) -> Rect {
-        let texture = self.textures.get(texture_id as usize).unwrap();
+        let texture = self.get_texture(texture_id).unwrap();
         let TextureQuery { width, height, .. } = texture.query();
         Rect::new(0, 0, width, height)
+    }
+
+    pub fn submit(&mut self, texture_id: TextureId, texture: Texture<'a>) {
+        let TextureQuery { width, height, .. } = texture.query();
+        let texture_key = texture_id as usize;
+        let status = if self.textures.contains_key(&texture_key) {
+            "Replaced texture"
+        } else {
+            "Added texture"
+        };
+        println!("{} #{} ({}x{})", status, texture_key, width, height);
+        self.textures.insert(texture_key, texture);
     }
 }
